@@ -34,6 +34,9 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     Button speechInputButton;
     private Intent recognizerIntent;
 
+    boolean flag_mobile = false;
+    boolean flag_postpaid_prepaid = false;
+
     private SpeechRecognizer speech = null;
 
     @Override
@@ -98,11 +101,6 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     }
 
     public void promptSpeechInput() {
-        /*Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speech Input");*/
 
         recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE,
@@ -122,32 +120,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         }
     }
 
-    /*@Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
 
-        switch (requestCode) {
-            case CODE_SPEECH_INPUT: {
-                if (resultCode == RESULT_OK && null != data) {
-                    ArrayList<String> result = data
-                            .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    if (!isWelcomeCompleted) {
-                        if (result.get(0).equals("one")) {
-                            enterMobileNumber();
-                            isWelcomeCompleted = true;
-                        }
-                    } else {
-                        System.out.println(result.get(0));
-                        Toast.makeText(this, "Didn't detect", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-
-                }
-                break;
-            }
-
-        }
-    }*/
 
     @Override
     public void onReadyForSpeech(Bundle bundle) {
@@ -176,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     @Override
     public void onError(int errorCode) {
-        String errorMessage = getErrorText(errorCode);
+        String errorMessage = Util.getErrorText(errorCode);
         //Log.d(LOG_TAG, "FAILED " + errorMessage);
 
         Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
@@ -189,8 +162,11 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
         String text2 = matches.get(0);
         if (text2.equals("one")) {
-            enterMobileNumber();
-        }
+                flag_mobile = true;
+               // enterMobileNumber();
+            Intent toMobile = new Intent(this, MobileActvity.class);
+            startActivity(toMobile);
+            }
         Toast.makeText(this,text2, Toast.LENGTH_SHORT).show();
     }
 
@@ -204,42 +180,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     }
 
-    public static String getErrorText(int errorCode) {
-        String message;
-        switch (errorCode) {
-            case SpeechRecognizer.ERROR_AUDIO:
-                message = "Audio recording error";
-                break;
-            case SpeechRecognizer.ERROR_CLIENT:
-                message = "Client side error";
-                break;
-            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
-                message = "Insufficient permissions";
-                break;
-            case SpeechRecognizer.ERROR_NETWORK:
-                message = "Network error";
-                break;
-            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
-                message = "Network timeout";
-                break;
-            case SpeechRecognizer.ERROR_NO_MATCH:
-                message = "No match";
-                break;
-            case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
-                message = "RecognitionService busy";
-                break;
-            case SpeechRecognizer.ERROR_SERVER:
-                message = "error from server";
-                break;
-            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
-                message = "No speech input";
-                break;
-            default:
-                message = "Didn't understand, please try again.";
-                break;
-        }
-        return message;
-    }
+
 
     public class GestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
