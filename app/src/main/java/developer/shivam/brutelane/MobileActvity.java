@@ -164,12 +164,12 @@ public class MobileActvity extends AppCompatActivity implements TextToSpeech.OnI
                 .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
         String text2 = matches.get(0);
+        text2=text2.replaceAll("\\s+", "");
         if(validPhone(text2)) {
             mobileNo = text2;
             Intent toPrePost = new Intent(this, PrePostActvity.class);
             toPrePost.putExtra(Util.EXTRA_PHONE, mobileNo);
             startActivity(toPrePost);
-
         } else reenterMobileNumber();
 
         Toast.makeText(this,text2, Toast.LENGTH_SHORT).show();
@@ -177,9 +177,10 @@ public class MobileActvity extends AppCompatActivity implements TextToSpeech.OnI
     /// does not return false
     private boolean validPhone (String str) {
         if (str.length()!=10) {
+            Log.e(this.getClass().getSimpleName(), "INVALID phone: "+str);
             return false;
         } else {
-            Pattern p = Pattern.compile("^[1-9][0-9]*+$");
+            Pattern p = Pattern.compile("^[7-9][0-9]*+$");
             Matcher matcher = p.matcher(str);
             Log.e(this.getClass().getSimpleName(), "Valid phone");
             return matcher.find();
