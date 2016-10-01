@@ -4,7 +4,9 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -18,7 +20,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener {
+public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener, RecognitionListener {
 
     private static final String TAG = "VoicePayment";
     private TextToSpeech speaker;
@@ -30,11 +32,17 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private boolean listenToUser = false;
     private final int CODE_SPEECH_INPUT = 1;
     Button speechInputButton;
+    private Intent recognizerIntent;
+
+    private SpeechRecognizer speech = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        speaker = new TextToSpeech(this, this);
+        speaker.setSpeechRate(1f);
+        sayHello();
 
         speechInputButton = (Button) findViewById(R.id.btnSpeechInput);
         speechInputButton.setOnClickListener(new View.OnClickListener() {
@@ -45,9 +53,9 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         });
 
         gestureDetector = new GestureDetectorCompat(mContext, new GestureListener());
-        speaker = new TextToSpeech(this, this);
-        speaker.setSpeechRate(1f);
-        sayHello();
+
+        speech = SpeechRecognizer.createSpeechRecognizer(this);
+        speech.setRecognitionListener(this);
     }
 
     @Override
@@ -90,19 +98,31 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     }
 
     public void promptSpeechInput() {
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        /*Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speech Input");
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speech Input");*/
+
+        recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE,
+                "en");
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,
+                this.getPackageName());
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
+
+
         try {
-            startActivityForResult(intent, CODE_SPEECH_INPUT);
+            //startActivityForResult(intent, CODE_SPEECH_INPUT);
+            speech.startListening(recognizerIntent);
         } catch (ActivityNotFoundException a) {
             Toast.makeText(getApplicationContext(), "Not Supported", Toast.LENGTH_SHORT).show();
         }
     }
 
-    @Override
+    /*@Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -127,8 +147,99 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             }
 
         }
+    }*/
+
+    @Override
+    public void onReadyForSpeech(Bundle bundle) {
+
     }
 
+    @Override
+    public void onBeginningOfSpeech() {
+
+    }
+
+    @Override
+    public void onRmsChanged(float v) {
+
+    }
+
+    @Override
+    public void onBufferReceived(byte[] bytes) {
+
+    }
+
+    @Override
+    public void onEndOfSpeech() {
+
+    }
+
+    @Override
+    public void onError(int errorCode) {
+        String errorMessage = getErrorText(errorCode);
+        //Log.d(LOG_TAG, "FAILED " + errorMessage);
+
+        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onResults(Bundle results) {
+        ArrayList<String> matches = results
+                .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+
+        String text2 = matches.get(0);
+        if (text2.equals("one")) {
+            enterMobileNumber();
+        }
+        Toast.makeText(this,text2, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onPartialResults(Bundle bundle) {
+
+    }
+
+    @Override
+    public void onEvent(int i, Bundle bundle) {
+
+    }
+
+    public static String getErrorText(int errorCode) {
+        String message;
+        switch (errorCode) {
+            case SpeechRecognizer.ERROR_AUDIO:
+                message = "Audio recording error";
+                break;
+            case SpeechRecognizer.ERROR_CLIENT:
+                message = "Client side error";
+                break;
+            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
+                message = "Insufficient permissions";
+                break;
+            case SpeechRecognizer.ERROR_NETWORK:
+                message = "Network error";
+                break;
+            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
+                message = "Network timeout";
+                break;
+            case SpeechRecognizer.ERROR_NO_MATCH:
+                message = "No match";
+                break;
+            case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
+                message = "RecognitionService busy";
+                break;
+            case SpeechRecognizer.ERROR_SERVER:
+                message = "error from server";
+                break;
+            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
+                message = "No speech input";
+                break;
+            default:
+                message = "Didn't understand, please try again.";
+                break;
+        }
+        return message;
+    }
 
     public class GestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
