@@ -238,7 +238,16 @@ public class MobileActvity extends AppCompatActivity implements TextToSpeech.OnI
     public class GestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onDoubleTap(MotionEvent e) {
+            help();
             return super.onDoubleTap(e);
         }
     }
+    public void help(){
+        speaker.speak("Please speak a number", TextToSpeech.QUEUE_FLUSH, null);
+        speaker.speak(MOBILE_PAYMENTS, TextToSpeech.QUEUE_ADD, null);
+        speaker.speak(ELECTRICITY_PAYMENT, TextToSpeech.QUEUE_ADD, null);
+
+
+    }
+
 }
