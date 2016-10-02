@@ -161,12 +161,20 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
         String text2 = matches.get(0);
-        if (text2.equals("one")) {
+        if (text2.equals("one")||text2.equals("1")) {
                 flag_mobile = true;
                // enterMobileNumber();
             Intent toMobile = new Intent(this, MobileActvity.class);
             startActivity(toMobile);
             }
+        else if (text2.equals("two")||text2.equals("2")) {
+            Intent toPayment = new Intent(this, PaymentActivity.class);
+            toPayment.putExtra(Util.EXTRA_AMOUNT, "200");
+            toPayment.putExtra(Util.EXTRA_PHONE, "7838610238");
+            toPayment.putExtra(Util.EXTRA_PRE_POST, "prepaid");
+            toPayment.putExtra(Util.EXTRA_CARRIER, "Airtel");
+            startActivity(toPayment);
+        }
         Toast.makeText(this,text2, Toast.LENGTH_SHORT).show();
     }
 
